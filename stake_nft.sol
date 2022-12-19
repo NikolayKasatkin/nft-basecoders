@@ -88,7 +88,7 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         uint finish_data;
         uint apy_value;
         uint days_value;
-        uint stake_id;
+        string stake_id;
     }
 
     struct id_params {
@@ -98,13 +98,14 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
 
     mapping(uint => features) private nft_features;
 
-    mapping(uint => uint) private stake_id_nft_id;
+    mapping(string => uint) private stake_id_nft_id;
 
     mapping(uint => bool) private transferable;
 
     mapping(address => uint[]) private ownerOfToken;
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
+        initialize();
         _disableInitializers();
     }
 
@@ -132,7 +133,7 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         uint finish_data,
         uint apy_value,
         uint days_value,
-        uint stake_id
+        string memory stake_id
         ) external onlyOwner returns(uint) {
         
             _safeMint(owner(), _currentIndex);
@@ -210,13 +211,13 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         _safeTransfer(from, to, tokenId, data);
     }
 
-    function sendTokenClient(address _userWallet, uint _stakeId) external onlyOwner returns(features memory) {
+    function sendTokenClient(address _userWallet, string memory _stakeId) external onlyOwner returns(features memory) {
         require(nft_features[stake_id_nft_id[_stakeId]].user_wallet == _userWallet, "nft not found");
         _safeTransfer(_ownerOf(stake_id_nft_id[_stakeId]), _userWallet, stake_id_nft_id[_stakeId], "");
         return nft_features[stake_id_nft_id[_stakeId]];
     }
 
-    function returnToken(address _userWallet, uint _stakeId, bool _burnBool) external onlyOwner returns(features memory) {
+    function returnToken(address _userWallet, string memory _stakeId, bool _burnBool) external onlyOwner returns(features memory) {
         require(nft_features[stake_id_nft_id[_stakeId]].user_wallet == _userWallet, "nft not found");
 
         if (_burnBool) {
