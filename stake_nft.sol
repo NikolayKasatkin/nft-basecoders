@@ -62,7 +62,6 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
     mapping(address => uint[]) public ownerOfToken;
 
     constructor() {
-        initialize();
         _disableInitializers();
     }
 
