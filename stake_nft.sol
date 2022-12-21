@@ -45,7 +45,7 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         uint finish_data;
         uint apy_value;
         uint days_value;
-        bytes16 stake_id;
+        string stake_id;
     }
 
     struct id_params {
@@ -53,13 +53,13 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         features myFeatures;
     }
 
-    mapping(uint => features) public nft_features;
+    mapping(uint => features) private nft_features;
 
-    mapping(bytes16 => uint) private stake_id_nft_id;
+    mapping(string => uint) private stake_id_nft_id;
 
     mapping(uint => bool) private transferable;
 
-    mapping(address => uint[]) public ownerOfToken;
+    mapping(address => uint[]) private ownerOfToken;
 
     constructor() {
         _disableInitializers();
@@ -83,7 +83,7 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         uint finish_data,
         uint apy_value,
         uint days_value,
-        bytes16 stake_id
+        string memory stake_id
         ) external onlyOwner returns(uint) {
         
             _safeMint(owner(), _currentIndex);
@@ -101,15 +101,6 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         return nft_features[_tokenId];
     }
 
-    // function getNftParams(address _userWallet) public view returns(id_params[] memory) {
-    //     require(ownerOfToken[_userWallet].length != 0, "you don't have nft");
-    //     id_params[] memory myArray = new id_params[](ownerOfToken[_userWallet].length);
-    //     for (uint i; i < ownerOfToken[_userWallet].length; i++) {
-    //         myArray[i] = id_params(ownerOfToken[_userWallet][i], nft_features[ownerOfToken[_userWallet][i]]);
-    //     }
-    //     return myArray;
-    // }
-
     function getOwnerOf(address _owner) public view returns(uint[] memory) {
         return ownerOfToken[_owner];
     }
@@ -125,6 +116,12 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
 
     function setBaseURI(string memory uri) public onlyOwner {
         baseURI = uri;
+    }
+
+    function totalSupply() public view returns (uint256) {
+        unchecked {
+            return _currentIndex - _burnCounter;
+        }
     }
 
     function setTransferable(uint _tokenId, bool _transferable) external onlyOwner {
@@ -161,13 +158,13 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         _safeTransfer(from, to, tokenId, data);
     }
 
-    function sendTokenClient(address _userWallet, bytes16 _stakeId) external onlyOwner returns(features memory) {
+    function sendTokenClient(address _userWallet, string memory _stakeId) external onlyOwner returns(features memory) {
         require(nft_features[stake_id_nft_id[_stakeId]].user_wallet == _userWallet, "nft not found");
         _safeTransfer(_ownerOf(stake_id_nft_id[_stakeId]), _userWallet, stake_id_nft_id[_stakeId], "");
         return nft_features[stake_id_nft_id[_stakeId]];
     }
 
-    function returnToken(address _userWallet, bytes16 _stakeId, bool _burnBool) external onlyOwner returns(features memory) {
+    function returnToken(address _userWallet, string memory _stakeId, bool _burnBool) external onlyOwner returns(features memory) {
         require(nft_features[stake_id_nft_id[_stakeId]].user_wallet == _userWallet, "nft not found");
 
         if (_burnBool) {
@@ -187,7 +184,6 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         
         for (uint i; i < ownerOfToken[nft_features[_tokenId].user_wallet].length; i++) {
             if (ownerOfToken[nft_features[_tokenId].user_wallet][i] == _tokenId) {
-                // delete ownerOfToken[nft_features[_tokenId].user_wallet][i];
                 ownerOfToken[nft_features[_tokenId].user_wallet][i] = ownerOfToken[nft_features[_tokenId].user_wallet][ownerOfToken[nft_features[_tokenId].user_wallet].length - 1];
                 ownerOfToken[nft_features[_tokenId].user_wallet].pop();
 
