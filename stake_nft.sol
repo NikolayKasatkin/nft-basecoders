@@ -61,6 +61,10 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
 
     mapping(address => uint[]) private ownerOfToken;
 
+    event MintNFT(string _stake_id, uint _nft_id);
+    event SendTokenClient(features);
+    event ReturnToken(features);
+
     constructor() {
         _disableInitializers();
     }
@@ -84,7 +88,7 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         uint apy_value,
         uint days_value,
         string memory stake_id
-        ) external onlyOwner returns(uint) {
+        ) external onlyOwner {
         
             _safeMint(owner(), _currentIndex);
 
@@ -94,7 +98,7 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
             ownerOfToken[user_wallet].push(_currentIndex);
 
             _currentIndex += 1;
-            return stake_id_nft_id[stake_id];
+            emit MintNFT(stake_id , stake_id_nft_id[stake_id]);
     }
 
     function getNft(uint _tokenId) public view returns(features memory) {
@@ -158,13 +162,13 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
         _safeTransfer(from, to, tokenId, data);
     }
 
-    function sendTokenClient(address _userWallet, string memory _stakeId) external onlyOwner returns(features memory) {
+    function sendTokenClient(address _userWallet, string memory _stakeId) external onlyOwner {
         require(nft_features[stake_id_nft_id[_stakeId]].user_wallet == _userWallet, "nft not found");
         _safeTransfer(_ownerOf(stake_id_nft_id[_stakeId]), _userWallet, stake_id_nft_id[_stakeId], "");
-        return nft_features[stake_id_nft_id[_stakeId]];
+        emit SendTokenClient(nft_features[stake_id_nft_id[_stakeId]]);
     }
 
-    function returnToken(address _userWallet, string memory _stakeId, bool _burnBool) external onlyOwner returns(features memory) {
+    function returnToken(address _userWallet, string memory _stakeId, bool _burnBool) external onlyOwner {
         require(nft_features[stake_id_nft_id[_stakeId]].user_wallet == _userWallet, "nft not found");
 
         if (_burnBool) {
@@ -173,7 +177,7 @@ contract tokenForStake is Initializable, ERC721Upgradeable, ERC721BurnableUpgrad
             _safeTransfer(_ownerOf(stake_id_nft_id[_stakeId]), owner(), stake_id_nft_id[_stakeId], "");
         }
 
-        return nft_features[stake_id_nft_id[_stakeId]];
+        emit ReturnToken(nft_features[stake_id_nft_id[_stakeId]]);
     }
 
     function burn(uint256 _tokenId) public virtual override {
